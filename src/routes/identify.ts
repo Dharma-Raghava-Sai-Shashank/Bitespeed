@@ -75,7 +75,7 @@ router.post("/", async (req, res) => {
       return res
         .status(400)
         .json({ error: "Either email or phoneNumber must be provided" });
-        
+
     } else if (primaryContatctIds.length === 0) {
       // Case 1: No existing contacts found - Create a new primary contact
       const newContact = await prisma.contact.create({
@@ -110,15 +110,19 @@ router.post("/", async (req, res) => {
         },
       });
 
-      // Check if a contact with this exact email and phone already exists
-      const ifAlreadyExists = await prisma.contact.findFirst({
-        where: {
-          AND: [{ email: email }, { phoneNumber: phoneNumber }],
-        },
+      // Check if a email with this exact email already exists
+      const ifEmailAlreadyExists = await prisma.contact.findFirst({
+        where: { email: email },
       });
 
-      // If no exact match exists, create a new secondary contact
-      if (ifAlreadyExists.length === 0) {
+      // Check if a phone number with this exact phone number already exists
+      const ifPhoneNumberAlreadyExists = await prisma.contact.findFirst({
+        where:  { phoneNumber: phoneNumber },
+      });
+
+
+      // If no match exists, create a new secondary contact
+      if (ifEmailAlreadyExists == null || ifPhoneNumberAlreadyExists == null) {
         const newContact = await prisma.contact.create({
           data: {
             email,
